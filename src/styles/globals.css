@@ -1,0 +1,7 @@
+body {
+  background: url("../../public/pokemon-bg.jpg");
+  background-size: cover;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  overflow: hidden;
+}
