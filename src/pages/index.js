@@ -3,90 +3,105 @@ import Count from '@/components/counting';
 import styles from '@/styles/MatchingGame.module.css'
 import useScore from './api/score';
 import { Encrypt } from '@/lib/crypto';
+
 const cardList = [
-  'sakatonik',
-  'double',
-  'fairy',
-  'fighting',
-  'fire',
-  'grass',
-  'lightning',
-  'metal',
-  'psychic',
-  'water'
+  'woods-yellow',
+  'procold-purple',
+  'sakatonik-blue',
+  'fatigon-red',
+  'marine-gummy-yellow',
+  'promag-green',
 ];
 
 const cardListMedium = [
-  'sakatonik',
-  'sakatonik-1',
-  'fairy',
-  'fighting',
-  'fire',
-  'grass',
-  'lightning',
-  'metal',
-  'psychic',
-  'water'
+  'xonce-red',
+  'woods-yellow',
+  'procold-purple',
+  'sakatonik-blue',
+  'fatigon-red',
+  'marine-gummy-yellow',
+  'promag-green',
+  'entrostop-red'
+  // 'xonce-red',
+  // 'woods-yellow',
+  // 'procold-purple',
+  // 'sakatonik-blue',
+  // 'kalpanax-red',
+  // 'fatigon-red',
+  // 'entrostop-red',
+  // 'marine-gummy-purple',
+  // 'promag-green',
+  // 'sakatonik-purple',
 ];
+
 const cardListHard = [
-  'sakatonik',
-  'sakatonik-1',
-  'sakatonik-2',
-  'fighting',
-  'fire',
-  'grass',
-  'lightning',
-  'metal',
-  'psychic',
-  'water'
+  'xonce-red',
+  'woods-yellow',
+  'procold-purple',
+  'sakatonik-blue',
+  'fatigon-red',
+  'marine-gummy-yellow',
+  'sakatonik-pink',
+  'marine-gummy-orange',
+  'promag-green',
+  'entrostop-red'
+  // 'xonce-red',
+  // 'mixagrip-red',
+  // 'kalpanax-red',
+  // 'fatigon-red',
+  // 'entrostop-red',
+  // 'marine-gummy-purple',
+  // 'procold-purple',
+  // 'sakatonik-purple',
+  // 'woods-yellow',
+  // 'promag-green'
 ];
 
-const rows = 4;
-const columns = 5;
-
-const generateInitialBoard = (difficulty) => {
-  let cardListDifficulty = [];
-  if (difficulty === 1){
-   cardListDifficulty = cardList;
-  }else if (difficulty === 2){
-    cardListDifficulty = cardListMedium;
-  }else if (difficulty === 3){
-    cardListDifficulty = cardListHard;
-  }
-  const cards = cardListDifficulty.concat(cardListDifficulty);
-  const shuffledCards = cards.sort(() => Math.random() - 0.5);
-  const initialBoard = [];
-
-  let cardIndex = 0;
-  const totalCards = rows * columns;
-  // const decoyCount = totalCards - difficulty;
-
-  for (let i = 0; i < rows; i++) {
-    const row = [];
-    for (let j = 0; j < columns; j++) {
-      let card = shuffledCards[cardIndex];
-
-      // Adding decoy cards based on the difficulty level
-      // if (card.startsWith('darkness') && card !== 'darkness' && decoyCount > 0) {
-      //   card = 'darkness'; // Replace with the primary card for decoys
-      //   decoyCount--;
-      // }
-
-      row.push({
-        id: `${i}-${j}`,
-        card,
-        flipped: false,
-        matched: false,
-        clickable: true
-      });
-      cardIndex++;
-    }
-    initialBoard.push(row);
-  }
-  return initialBoard;
-};
 
 export default function MatchingCardGame() {
+
+  const [rows, setRows] = useState(4);
+  const [columns, setColumns] = useState(5);
+
+  const generateInitialBoard = (difficulty) => {
+    let cardListDifficulty = cardListHard;
+    let difficultyGameRows = 4
+    let difficultyGameColumns = 5
+    if (difficulty === 1) {
+      cardListDifficulty = cardList;
+      difficultyGameRows = 3
+      difficultyGameColumns = 4
+    } else if (difficulty === 2) {
+      cardListDifficulty = cardListMedium;
+      difficultyGameRows = 4
+      difficultyGameColumns = 4
+    }
+
+    const cards = cardListDifficulty.concat(cardListDifficulty);
+    const shuffledCards = cards.sort(() => Math.random() - 0.5);
+    const initialBoard = [];
+
+    let cardIndex = 0;
+
+    for (let i = 0; i < difficultyGameRows; i++) {
+      const row = [];
+      for (let j = 0; j < difficultyGameColumns; j++) {
+        let card = shuffledCards[cardIndex];
+
+        row.push({
+          id: `${i}-${j}`,
+          card,
+          flipped: false,
+          matched: false,
+          clickable: true
+        });
+        cardIndex++;
+      }
+      initialBoard.push(row);
+    }
+    return initialBoard;
+  };
+
   const [board, setBoard] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState(0);
@@ -118,6 +133,8 @@ export default function MatchingCardGame() {
   const resetGame = () => {
     setSelectedCards([]);
     setMatchedCards(0);
+    setRows(4);
+    setColumns(5);
     setErrors(0);
     setClickPlay(0);
     setDifficulty(1);
@@ -221,6 +238,16 @@ export default function MatchingCardGame() {
           setLoading(false);
           setGameStart(false);
           setClickPlay(2);
+          if (difficulty === 1) {
+            setRows(3);
+            setColumns(4);
+          } else if (difficulty === 2) {
+            setRows(4);
+            setColumns(4);
+          } else if (difficulty === 3) {
+            setRows(4);
+            setColumns(5);
+          }
           setBoard(generateInitialBoard(difficulty));
           startStopwatch();
           i = 0;
@@ -231,26 +258,28 @@ export default function MatchingCardGame() {
   }, [gameStart]);
 
   const calculateScore = (difficulty, timeCount, errors) => {
-    let score = 0;
-  
-    switch (difficulty) {
-      case 1:
-        score = timeCount * 1 - errors * 6 ;
-        break;
-      case 2:
-        score = timeCount * 2 - errors * 5;
-        break;
-      case 3:
-        score = timeCount * 4 - errors * 4;
-        break;
-      default:
-        score = timeCount - errors;
-        break;
+
+    let difficultyMultiplier = 1;
+    if (difficulty === 2) {
+      difficultyMultiplier = 0.65;
+    } else if (difficulty === 1) {
+      difficultyMultiplier = 0.35;
     }
-  
-    return score > 0 ? score : 0; // Ensure score is non-negative
+
+    const baseScore = 120000;
+    const errorPenalty = errors * 20;
+
+    let score = Math.max(0, (baseScore * difficultyMultiplier) - errorPenalty - timeCount);
+
+    const minimumScore = 5;
+
+    if (score < minimumScore) {
+      score = minimumScore;
+    }
+
+    return score;
   };
-  
+
   useEffect(() => {
     const handleMatchedCards = async () => {
       if (matchedCards === rows * columns) {
@@ -263,6 +292,7 @@ export default function MatchingCardGame() {
           time: timeCount,
           score: score,
           time_expired: Math.floor(new Date().getTime() / 1000),
+          difficulty
         };
 
         const encryptedCredentials = Encrypt(JSON.stringify(requestBody));
@@ -297,10 +327,6 @@ export default function MatchingCardGame() {
             transform-style: preserve-3d;
             transform-origin: center right;
             transition: all 0.5s;
-          
-            width: 75px;
-            height: 75px;
-          
             color: #fff;
             font-family: sans-serif;
             box-shadow: 0px 0px 25px -15px rgba(66, 68, 90, 1);
@@ -338,7 +364,7 @@ export default function MatchingCardGame() {
       </style>
       <div style={clickPlay == 0 ? { textAlign: 'center' } : { display: 'none' }}>
         Scoreboard
-        <div style={{ width: '100%', marginTop: '5px', overflowY: 'auto', overflowX: 'hidden', height: '40vh' }}>
+        <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '40vh' }}>
           <table border="1" cellPadding="10" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0 auto', fontSize: '12px' }}>
             <thead>
               <tr>
@@ -346,6 +372,7 @@ export default function MatchingCardGame() {
                 <th>Score</th>
                 <th>Time</th>
                 <th>Error</th>
+                <th>Difficulty</th>
               </tr>
             </thead>
             <tbody>
@@ -356,6 +383,7 @@ export default function MatchingCardGame() {
                     <td>{item.Score}</td>
                     <td>{formatTime(item.Time)}</td>
                     <td>{item.Error}</td>
+                    <td>{item.Difficulty === 1 ? "Easy" : item.Difficulty === 2 ? "Medium" : item.Difficulty === 3 ? "Hard" : ''}</td>
                   </tr>
                 </>
               ))}
@@ -385,17 +413,22 @@ export default function MatchingCardGame() {
               setUsername(e.target.value);
             }} />
             <br />
-            {username === "" ? "Please enter a username" : ""}
+            <p style={{ whiteSpace: 'nowrap' }}>{username === "" ? "Please enter a username" : ""}</p>
             <br />
-            <input type="radio" name="myRadios" onChange={(e)=>{
-              e.preventDefault();
-              setDifficulty(1)}} value={difficulty} checked={difficulty === 1}/>Easy
-            <input type="radio" name="myRadios" onChange={(e)=>{
-              e.preventDefault();
-              setDifficulty(2)}} value={difficulty} checked={difficulty === 2}/>Medium
-            <input type="radio" name="myRadios" onChange={(e)=>{
-              e.preventDefault();
-              setDifficulty(3)}} value={difficulty} checked={difficulty === 3}/>Hard
+            <div style={{ whiteSpace: 'nowrap' }}>
+              <input type="radio" name="myRadios" onChange={(e) => {
+                e.preventDefault();
+                setDifficulty(1)
+              }} value={difficulty} checked={difficulty === 1} />Easy
+              <input type="radio" name="myRadios" onChange={(e) => {
+                e.preventDefault();
+                setDifficulty(2)
+              }} value={difficulty} checked={difficulty === 2} />Medium
+              <input type="radio" name="myRadios" onChange={(e) => {
+                e.preventDefault();
+                setDifficulty(3)
+              }} value={difficulty} checked={difficulty === 3} />Hard
+            </div>
             <br />
             <button onClick={(e) => {
               e.preventDefault();
@@ -407,32 +440,32 @@ export default function MatchingCardGame() {
 
       <Count loading={loading} text={text}></Count>
 
-      <div style={clickPlay === 2 ? { display: 'block', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '50px' } : { display: 'none' }}>
+      <div style={clickPlay === 2 ? { overflow: 'hidden', display: 'block', position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', padding: '50px' } : { display: 'none' }}>
         Time: {time.minutes < 10 ? `0${time.minutes}` : time.minutes}:{time.seconds < 10 ? `0${time.seconds}` : time.seconds}:{time.milliseconds < 10 ? `0${time.milliseconds}` : time.milliseconds}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
           <p>Errors: {errors}</p>
           <p>Difficulty: {difficulty === 1 ? "Easy" : difficulty === 2 ? 'Medium' : "Hard"}</p>
           <button style={{ height: '50px' }} onClick={resetGame}>Reset Game</button>
         </div>
-        <div className={styles.cardboard} style={{ display: 'grid', marginLeft: '-50px' }}>
+        <div className={styles.cardboard} style={{ display: 'grid' }}>
           {board.map((row, rowIndex) =>
             row.map((col, colIndex) => (
               <div key={col.id} className={`tile ${col.flipped ? 'is-flipped' : ''}`}>
                 <div class="tile__face tile__face--front"
                   style={{ cursor: col.clickable ? 'pointer' : 'not-allowed' }}
                   onClick={() => flipCard(rowIndex, colIndex)}>
-                  {!col.flipped && !col.matched ? 
-                    <img src={'back-kch.jpg'}
-                    className={styles.card}/> 
-                    : 
-                    <img src={`${col.card}.jpg`}
-                    className={styles.card}
-                  />
+                  {!col.flipped && !col.matched ?
+                    <img src={'back-kch.jpeg'}
+                      className={styles.card} />
+                    :
+                    <img src={`${col.card}.jpeg`}
+                      className={styles.card}
+                    />
                   }
 
                 </div>
                 <div class="tile__face tile__face--back">
-                  <img src={`${col.card}.jpg`}
+                  <img src={`${col.card}.jpeg`}
                     className={styles.card}
                   />
                 </div>
