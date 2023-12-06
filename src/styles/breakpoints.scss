@@ -1,0 +1,20 @@
+$screen-xs-min: 425px;
+$screen-sm-min: 640px;
+$screen-md-min: 768px;
+
+@mixin xs {
+  @media (min-width: #{$screen-xs-min}) {
+    @content;
+  }
+}
+@mixin sm {
+  @media (min-width: #{$screen-sm-min}) {
+    @content;
+  }
+}
+
+@mixin md {
+  @media (min-width: #{$screen-md-min}) {
+    @content;
+  }
+}

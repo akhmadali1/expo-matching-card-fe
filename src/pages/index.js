@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Count from '@/components/counting';
-import styles from '@/styles/MatchingGame.module.css'
+import styles from '@/styles/_match-card.module.scss'
 import useScore from './api/score';
 import { Encrypt } from '@/lib/crypto';
+import { truncateString } from '@/lib/truncate-string';
+import StageOne from '@/components/game/stage-one';
+import Scoreboard from '@/components/game/scoreboard';
+import Game from '@/components/game';
 
 const cardList = [
   'woods-yellow',
@@ -22,16 +26,6 @@ const cardListMedium = [
   'marine-gummy-yellow',
   'promag-green',
   'entrostop-red'
-  // 'xonce-red',
-  // 'woods-yellow',
-  // 'procold-purple',
-  // 'sakatonik-blue',
-  // 'kalpanax-red',
-  // 'fatigon-red',
-  // 'entrostop-red',
-  // 'marine-gummy-purple',
-  // 'promag-green',
-  // 'sakatonik-purple',
 ];
 
 const cardListHard = [
@@ -45,16 +39,6 @@ const cardListHard = [
   'marine-gummy-orange',
   'promag-green',
   'entrostop-red'
-  // 'xonce-red',
-  // 'mixagrip-red',
-  // 'kalpanax-red',
-  // 'fatigon-red',
-  // 'entrostop-red',
-  // 'marine-gummy-purple',
-  // 'procold-purple',
-  // 'sakatonik-purple',
-  // 'woods-yellow',
-  // 'promag-green'
 ];
 
 
@@ -62,6 +46,22 @@ export default function MatchingCardGame() {
 
   const [rows, setRows] = useState(4);
   const [columns, setColumns] = useState(5);
+  const audioRef = useRef(null);
+
+  const [clickPlay, setClickPlay] = useState(0);
+  const clickPlaySetting = (value) => {
+    setClickPlay(value);
+  }
+
+  const [username, setUsername] = useState("");
+  const usernameSetting = (value) => {
+    setUsername(value);
+  }
+
+  const [difficulty, setDifficulty] = useState(1);
+  const difficultySetting = (value) => {
+    setDifficulty(value);
+  }
 
   const generateInitialBoard = (difficulty) => {
     let cardListDifficulty = cardListHard;
@@ -106,7 +106,6 @@ export default function MatchingCardGame() {
   const [selectedCards, setSelectedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState(0);
   const [errors, setErrors] = useState(0);
-  const [clickPlay, setClickPlay] = useState(0);
 
   const [gameStart, setGameStart] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -142,25 +141,6 @@ export default function MatchingCardGame() {
     resetStopwatch();
   };
 
-  const flipCard = (row, col) => {
-    const currentCard = board[row][col];
-    if (currentCard.matched || selectedCards.length === 2 || !currentCard.clickable) {
-      return;
-    }
-  
-    const updatedBoard = board.map((r, rowIndex) =>
-      r.map((c, colIndex) => {
-        if (rowIndex === row && colIndex === col) {
-          return { ...c, flipped: true, clickable: false };
-        }
-        return c;
-      })
-    );
-  
-    setSelectedCards([...selectedCards, currentCard]);
-    setBoard(updatedBoard);
-  };
-
   const checkForMatch = () => {
     const [card1, card2] = selectedCards;
     const updatedBoard = board.map(row =>
@@ -184,40 +164,6 @@ export default function MatchingCardGame() {
     setSelectedCards([]);
   };
 
-  const [time, setTime] = useState({ minutes: 0, seconds: 0, milliseconds: 0 });
-  const [timeCount, setTimeCount] = useState(0);
-  const intervalRef = useRef(null);
-
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60000);
-    const seconds = Math.floor((time % 60000) / 1000);
-    const milliseconds = Math.floor((time % 1000) / 10);
-    return (
-      <>
-        {minutes < 10 ? `0${minutes}` : minutes}:
-        {seconds < 10 ? `0${seconds}` : seconds}:
-        {milliseconds < 10 ? `0${milliseconds}` : milliseconds}
-      </>
-    );
-  };
-
-  const startStopwatch = () => {
-    const startTime = Date.now() - (time.minutes * 60000 + time.seconds * 1000 + time.milliseconds);
-    intervalRef.current = setInterval(() => {
-      const elapsedTime = Date.now() - startTime;
-      const minutes = Math.floor(elapsedTime / 60000);
-      const seconds = Math.floor((elapsedTime % 60000) / 1000);
-      const milliseconds = Math.floor((elapsedTime % 1000) / 10);
-      setTimeCount(elapsedTime);
-      setTime({ minutes, seconds, milliseconds });
-    }, 10);
-  };
-
-  const resetStopwatch = () => {
-    clearInterval(intervalRef.current);
-    setTimeCount(0);
-  };
-
   useEffect(() => {
     if (selectedCards.length === 2) {
       const timeout = setTimeout(() => {
@@ -228,9 +174,6 @@ export default function MatchingCardGame() {
     }
   }, [selectedCards]);
 
-
-  const [username, setUsername] = useState("");
-  const [difficulty, setDifficulty] = useState(1);
   useEffect(() => {
     let intervalId;
     if (gameStart) {
@@ -321,36 +264,22 @@ export default function MatchingCardGame() {
     handleMatchedCards();
   }, [matchedCards]);
 
-  const audioRef = useRef(null);
-
-  const playAudio = () => {
-    const audio = audioRef.current;
-
-    // Check if the audio is paused or hasn't started
-    if (audio.paused || audio.ended) {
-      audio.play().catch(error => {
-        // Autoplay was prevented; handle it here
-        console.error('Autoplay prevented:', error);
-      });
-    }
-  };
-
-  function truncateString(str, maxLength) {
-    if (str?.length > maxLength) {
-      return str.substring(0, maxLength) + '...';
-    }
-    return str;
-  }
-
-
   return (
-    <div>
-      <style>
-        {
-          `
+
+    <div className='container-bg'>
+      <svg viewBox="0 0 553 594" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-right'>
+        <path d="M66.7492 -102.486C101.588 -126.201 131.617 -150.052 156.667 -172.197C282.376 -344.728 276.241 -277.903 156.667 -172.197C155.393 -170.449 154.106 -168.676 152.805 -166.879C-3.77379 49.4863 260.286 -311.181 377.051 4.89337C439.259 173.288 398.138 284.218 376.315 344.616C384.925 360.244 388.575 379.49 390.344 400.302C402.927 399.952 420.987 397.022 446.145 391.603C645.752 348.616 713.689 608.686 503.37 593.346C376.025 584.058 397.162 480.538 390.344 400.302C356.28 401.251 362.34 383.296 376.315 344.616C363.297 320.987 338.941 305.628 292.602 305.628C97.458 305.628 340.363 -26.3174 106.834 -20.0744C76.5012 -19.2635 53.9412 -18.2962 37.5726 -17.3409C6.00554 -9.85706 -28.2112 -13.5018 37.5726 -17.3409C58.6233 -22.3316 78.4956 -32.2711 66.7492 -50.4019C39.7541 -92.0695 55.5013 -102.486 66.7492 -102.486Z" fill="#08793F" fillOpacity="0.4" />
+      </svg>
+      <img src={'logo-kalbe-black-1.webp'} className='logo' />
+      <svg width="529" height="368" viewBox="0 0 529 368" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-left'>
+        <path d="M291.561 117.507C496.474 -160.389 -127.737 141.397 -148.789 144.559L-173 1045H147C125.83 1020.88 103.421 940.587 183.14 812.424C282.79 652.221 649.105 196.038 489.105 180.931C329.105 165.824 86.6492 395.404 291.561 117.507Z" fill="#08793F" fillOpacity="0.4" />
+      </svg>
+      <div className='container'>
+        <style>
+          {
+            `
           ${clickPlay === 2 && `
           .tile {
-          
             position: relative;
             transform-style: preserve-3d;
             transform-origin: center right;
@@ -369,14 +298,11 @@ export default function MatchingCardGame() {
             display: flex;
             justify-content: center;
             align-items: center;
-          
             position: absolute;
             width: 100%;
             height: 100%;
-          
             font-size: 12px;
-          
-            backface-visibility: hidden; /*hide element on back*/
+            backface-visibility: hidden;
           }
           
           .tile__face--back {
@@ -388,153 +314,52 @@ export default function MatchingCardGame() {
           }
           `}
           `
+          }
+        </style>
+        <audio ref={audioRef} loop autoPlay>
+          <source src="bg-music.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+        <Count loading={loading} text={text}></Count>
+        {clickPlay === -1 &&
+          <>
+            <Scoreboard dataScoreBoard={dataScoreBoard} setClickPlay={clickPlaySetting} />
+          </>
         }
-      </style>
-      <audio ref={audioRef} loop autoPlay>
-        <source src="bg-music.mp3" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-      <div style={clickPlay === -1 ? { textAlign: 'center' } : { display: 'none' }}>
-        Scoreboard
-        <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '70vh' }}>
-          <table border="1" cellPadding="10" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0 auto', fontSize: '12px' }}>
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Score</th>
-                <th>Time</th>
-                <th>Error</th>
-                <th>Difficulty</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dataScoreBoard.map((item) => (
-                <>
-                  <tr>
-                    <td>{item.Username}</td>
-                    <td>{item.Score}</td>
-                    <td>{formatTime(item.Time)}</td>
-                    <td>{item.Error}</td>
-                    <td>{item.Difficulty === 1 ? "Easy" : item.Difficulty === 2 ? "Medium" : item.Difficulty === 3 ? "Hard" : ''}</td>
-                  </tr>
-                </>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
-              e.preventDefault();
-              setClickPlay(1);
-            }}>Back</button>
-      </div>
-      <div style={clickPlay == 1 ? { textAlign: 'center' } : { display: 'none' }}>
-        <h1>Top 3</h1>
-        <div class="podium-container">
-          <div class="podium">
-            <div class="podium__front podium__left">
-              <div class="">2</div>
-              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[1]?.Username,5)}</p></div>
+        {clickPlay === 0 &&
+          <>
+            <StageOne dataScoreBoard={dataScoreBoard} username={username} difficulty={difficulty} audioRef={audioRef} setUsername={usernameSetting} setDifficulty={difficultySetting} setClickPlay={clickPlaySetting} />
+          </>
+        }
+        {
+          clickPlay === 1 &&
+          <>
+            <div style={{ textAlign: 'center' }}>
+              <h1>Welcome to Cards Match</h1>
+              <button style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+                e.preventDefault();
+                setGameStart(true);
+              }}>
+                Play
+              </button>
+              <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+                e.preventDefault();
+                setClickPlay(0);
+              }}>Back</button>
+              <button style={{ marginTop: '10px', marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+                e.preventDefault();
+                setClickPlay(-1);
+              }}>Score Board</button>
             </div>
-            <div class="podium__front podium__center">
-              <div class="">1</div>
-              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[0]?.Username,5)}</p></div>
-            </div>
-            <div class="podium__front podium__right">
-              <div class="">3</div>
-              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[2]?.Username,5)}</p></div>
-            </div>
-          </div>
-        </div>
-        <h1>Welcome to Cards Match</h1>
-        <button style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
-          e.preventDefault();
-          setGameStart(true);
-        }}>
-          Play
-        </button>
-        <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
-              e.preventDefault();
-              setClickPlay(0);
-            }}>Back</button>
-        <button style={{ marginTop:'10px',marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
-              e.preventDefault();
-              setClickPlay(-1);
-            }}>Score Board</button>
-      </div>
-      {clickPlay == 0 &&
+          </>
+        }
+        {clickPlay === 2 && 
         <>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (username !== "") {
-              playAudio();
-              setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
-              setClickPlay(1);
-            }
-          }} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
-            <label for="fname">Username:</label><br />
-            <input type="text" value={username} name="username" onChange={(e) => {
-              e.preventDefault();
-              setUsername(e.target.value);
-            }} />
-            <br />
-            <p style={{ whiteSpace: 'nowrap' }}>{username === "" ? "Please enter a username" : ""}</p>
-            <br />
-            <div style={{ whiteSpace: 'nowrap' }}>
-              <input type="radio" name="myRadios" onChange={(e) => {
-                e.preventDefault();
-                setDifficulty(1)
-              }} value={difficulty} checked={difficulty === 1} />Easy
-              <input type="radio" name="myRadios" onChange={(e) => {
-                e.preventDefault();
-                setDifficulty(2)
-              }} value={difficulty} checked={difficulty === 2} />Medium
-              <input type="radio" name="myRadios" onChange={(e) => {
-                e.preventDefault();
-                setDifficulty(3)
-              }} value={difficulty} checked={difficulty === 3} />Hard
-            </div>
-            <br />
-            <button type='submit' style={{ marginTop: '10px' }}>Start</button>
-          </form>
-        </>}
+          <Game/>
+        </>
+        }
 
-      <Count loading={loading} text={text}></Count>
-
-      <div style={clickPlay === 2 ? { overflow: 'hidden', display: 'block', position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', padding: '50px' } : { display: 'none' }}>
-        Time: {time.minutes < 10 ? `0${time.minutes}` : time.minutes}:{time.seconds < 10 ? `0${time.seconds}` : time.seconds}:{time.milliseconds < 10 ? `0${time.milliseconds}` : time.milliseconds}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-          <p>Errors: {errors}</p>
-          <p>Difficulty: {difficulty === 1 ? "Easy" : difficulty === 2 ? 'Medium' : "Hard"}</p>
-          <button style={{ height: '50px' }} onClick={resetGame}>Reset Game</button>
-        </div>
-        <div className={styles.cardboard} style={{ display: 'grid' }}>
-          {board.map((row, rowIndex) =>
-            row.map((col, colIndex) => (
-              <div key={col.id} className={`tile ${col.flipped ? 'is-flipped' : ''}`}>
-                <div class="tile__face tile__face--front"
-                  style={{ cursor: col.clickable ? 'pointer' : 'not-allowed' }}
-                  onClick={() => col.clickable && flipCard(rowIndex, colIndex)}>
-                  {!col.flipped && !col.matched ?
-                    <img src={'back-kch.jpeg'}
-                      className={styles.card} />
-                    :
-                    <img src={`${col.card}.jpeg`}
-                      className={styles.card}
-                    />
-                  }
-
-                </div>
-                <div class="tile__face tile__face--back">
-                  <img src={`${col.card}.jpeg`}
-                    className={styles.card}
-                  />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
       </div>
-
     </div>
   );
 }

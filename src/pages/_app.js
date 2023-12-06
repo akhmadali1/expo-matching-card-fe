@@ -1,6 +1,5 @@
-import '@/styles/globals.css';
+import '@/styles/globals.scss';
 import Head from 'next/head';
-import './../styles/podium.scss'
 export default function App({ Component, pageProps }) {
   return (
     <>
@@ -13,7 +12,9 @@ export default function App({ Component, pageProps }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </Head>
       <>
-        <Component {...pageProps} />
+        <>
+          <Component {...pageProps} />
+        </>
       </>
     </>
   );

@@ -2,14 +2,9 @@
   p, h1{
     color: white;
   }
+  
   .podium-container {
     --_podium-size: 4px;
-    // @media only screen and (min-width: 600px) {
-    //   --_podium-size: 7.5px;
-    // }
-    // @media only screen and (min-width: 960px) {
-    //   --_podium-size: 10px;
-    // }
     perspective: calc(var(--_podium-size) * 50);
     margin-top: calc(var(--_podium-size) * 20);
     display: grid;
@@ -31,7 +26,6 @@
     background: red;
     padding-inline: calc(var(--_podium-size) * 5);
     padding-bottom: calc(var(--_podium-size) * 3);
-    //border: 2px solid;
     position: relative;
     transform-style: preserve-3d;
     transform-origin: top;
