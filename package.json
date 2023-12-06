@@ -12,7 +12,8 @@
     "axios": "^1.6.2",
     "next": "13.2",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "sass": "^1.69.5"
   },
   "devDependencies": {
     "eslint": "^8",

@@ -1,6 +1,6 @@
 body {
-  background: url("../../public/pokemon-bg.jpg");
-  background-size: cover;
+  background: linear-gradient(15deg, #e66465, #9198e5);
   font-family: Arial, Helvetica, sans-serif;
+  height: 100vh;
   text-align: center;
 }

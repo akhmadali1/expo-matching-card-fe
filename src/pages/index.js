@@ -143,14 +143,21 @@ export default function MatchingCardGame() {
   };
 
   const flipCard = (row, col) => {
-    if (selectedCards.length === 2 || !board[row][col].clickable) {
+    const currentCard = board[row][col];
+    if (currentCard.matched || selectedCards.length === 2 || !currentCard.clickable) {
       return;
     }
-
-    const updatedBoard = [...board];
-    updatedBoard[row][col].flipped = true;
-    updatedBoard[row][col].clickable = false;
-    setSelectedCards([...selectedCards, updatedBoard[row][col]]);
+  
+    const updatedBoard = board.map((r, rowIndex) =>
+      r.map((c, colIndex) => {
+        if (rowIndex === row && colIndex === col) {
+          return { ...c, flipped: true, clickable: false };
+        }
+        return c;
+      })
+    );
+  
+    setSelectedCards([...selectedCards, currentCard]);
     setBoard(updatedBoard);
   };
 
@@ -263,7 +270,7 @@ export default function MatchingCardGame() {
     if (difficulty === 2) {
       difficultyMultiplier = 0.65;
     } else if (difficulty === 1) {
-      difficultyMultiplier = 0.35;
+      difficultyMultiplier = 0.45;
     }
 
     const baseScore = 120000;
@@ -314,6 +321,27 @@ export default function MatchingCardGame() {
     handleMatchedCards();
   }, [matchedCards]);
 
+  const audioRef = useRef(null);
+
+  const playAudio = () => {
+    const audio = audioRef.current;
+
+    // Check if the audio is paused or hasn't started
+    if (audio.paused || audio.ended) {
+      audio.play().catch(error => {
+        // Autoplay was prevented; handle it here
+        console.error('Autoplay prevented:', error);
+      });
+    }
+  };
+
+  function truncateString(str, maxLength) {
+    if (str?.length > maxLength) {
+      return str.substring(0, maxLength) + '...';
+    }
+    return str;
+  }
+
 
   return (
     <div>
@@ -362,9 +390,13 @@ export default function MatchingCardGame() {
           `
         }
       </style>
-      <div style={clickPlay == 0 ? { textAlign: 'center' } : { display: 'none' }}>
+      <audio ref={audioRef} loop autoPlay>
+        <source src="bg-music.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+      <div style={clickPlay === -1 ? { textAlign: 'center' } : { display: 'none' }}>
         Scoreboard
-        <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '40vh' }}>
+        <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '70vh' }}>
           <table border="1" cellPadding="10" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0 auto', fontSize: '12px' }}>
             <thead>
               <tr>
@@ -390,25 +422,57 @@ export default function MatchingCardGame() {
             </tbody>
           </table>
         </div>
+        <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+              e.preventDefault();
+              setClickPlay(1);
+            }}>Back</button>
+      </div>
+      <div style={clickPlay == 1 ? { textAlign: 'center' } : { display: 'none' }}>
+        <h1>Top 3</h1>
+        <div class="podium-container">
+          <div class="podium">
+            <div class="podium__front podium__left">
+              <div class="">2</div>
+              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[1]?.Username,5)}</p></div>
+            </div>
+            <div class="podium__front podium__center">
+              <div class="">1</div>
+              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[0]?.Username,5)}</p></div>
+            </div>
+            <div class="podium__front podium__right">
+              <div class="">3</div>
+              <div class="podium__image"><p style={{fontSize:'30px'}}>{truncateString(dataScoreBoard[2]?.Username,5)}</p></div>
+            </div>
+          </div>
+        </div>
         <h1>Welcome to Cards Match</h1>
         <button style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
           e.preventDefault();
-          setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
-          setClickPlay(1);
+          setGameStart(true);
         }}>
           Play
         </button>
+        <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+              e.preventDefault();
+              setClickPlay(0);
+            }}>Back</button>
+        <button style={{ marginTop:'10px',marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+              e.preventDefault();
+              setClickPlay(-1);
+            }}>Score Board</button>
       </div>
-      {clickPlay == 1 &&
+      {clickPlay == 0 &&
         <>
           <form onSubmit={(e) => {
             e.preventDefault();
             if (username !== "") {
-              setGameStart(true);
+              playAudio();
+              setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
+              setClickPlay(1);
             }
           }} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
             <label for="fname">Username:</label><br />
-            <input type="text" name="username" onChange={(e) => {
+            <input type="text" value={username} name="username" onChange={(e) => {
               e.preventDefault();
               setUsername(e.target.value);
             }} />
@@ -430,11 +494,7 @@ export default function MatchingCardGame() {
               }} value={difficulty} checked={difficulty === 3} />Hard
             </div>
             <br />
-            <button onClick={(e) => {
-              e.preventDefault();
-              setClickPlay(0);
-            }}>Cancel</button>
-            <button type='submit' style={{ marginLeft: '10px', marginTop: '10px' }}>Start</button>
+            <button type='submit' style={{ marginTop: '10px' }}>Start</button>
           </form>
         </>}
 
@@ -453,7 +513,7 @@ export default function MatchingCardGame() {
               <div key={col.id} className={`tile ${col.flipped ? 'is-flipped' : ''}`}>
                 <div class="tile__face tile__face--front"
                   style={{ cursor: col.clickable ? 'pointer' : 'not-allowed' }}
-                  onClick={() => flipCard(rowIndex, colIndex)}>
+                  onClick={() => col.clickable && flipCard(rowIndex, colIndex)}>
                   {!col.flipped && !col.matched ?
                     <img src={'back-kch.jpeg'}
                       className={styles.card} />
