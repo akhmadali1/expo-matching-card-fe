@@ -1,5 +1,6 @@
 import React from 'react'
 import { truncateString } from '@/lib/truncate-string';
+import { Button, Card, Form, Input, Radio } from 'antd';
 
 export default function StageOne(props) {
     const { dataScoreBoard, username, difficulty, audioRef, setUsername, setDifficulty, setClickPlay } = props;
@@ -20,6 +21,10 @@ export default function StageOne(props) {
             });
         }
     };
+    const onChange = (e) => {
+        console.log('radio checked', e.target.value);
+        setDifficulty(e.target.value);
+    };
     return (
         <>
             <h1>Top 3</h1>
@@ -39,38 +44,72 @@ export default function StageOne(props) {
                     </div>
                 </div>
             </div>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                if (username !== "") {
-                    playAudio();
-                    setClickPlay(1);
-                }
-            }} >
-                <label htmlFor="fname">Username:</label><br />
-                <input type="text" value={username} name="username" onChange={(e) => {
-                    e.preventDefault();
-                    setUsername(e.target.value);
-                }} />
-                <br />
-                <p style={{ whiteSpace: 'nowrap' }}>{username === "" ? "Please enter a username" : ""}</p>
-                <br />
-                <div style={{ whiteSpace: 'nowrap' }}>
-                    <input type="radio" name="myRadios" onChange={(e) => {
-                        e.preventDefault();
-                        setDifficulty(1)
-                    }} value={difficulty} checked={difficulty === 1} />Easy
-                    <input type="radio" name="myRadios" onChange={(e) => {
-                        e.preventDefault();
-                        setDifficulty(2)
-                    }} value={difficulty} checked={difficulty === 2} />Medium
-                    <input type="radio" name="myRadios" onChange={(e) => {
-                        e.preventDefault();
-                        setDifficulty(3)
-                    }} value={difficulty} checked={difficulty === 3} />Hard
-                </div>
-                <br />
-                <button type='submit' style={{ marginTop: '10px' }}>Start</button>
-            </form>
+            <Card style={{ width: '100%' }}>
+                <Form
+                    name="basic"
+                    labelCol={{
+                        span: 8,
+                    }}
+                    wrapperCol={{
+                        span: 16,
+                    }}
+                    style={{
+                        // maxWidth: 600,
+                    }}
+                    initialValues={{
+                        remember: true,
+                    }}
+                    onFinish={(e) => {
+                        if (e.username !== "") {
+                            playAudio();
+                            setClickPlay(1);
+                        }
+                    }}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                        label="Username"
+                        name="username"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input your username!',
+                            },
+                        ]}
+                    >
+                        <Input placeholder='Username' value={username} onChange={(e) => {
+                            setUsername(e.target.value);
+                        }} />
+                    </Form.Item>
+
+                    <Form.Item
+                        label=""
+                        name="difficulty"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please choose difficulty!',
+                            },
+                        ]}
+                    >
+                        <Radio.Group onChange={onChange} value={difficulty}>
+                            <Radio value={2}>Basic</Radio>
+                            <Radio value={3}>Advance</Radio>
+                        </Radio.Group>
+                    </Form.Item>
+
+                    <Form.Item
+                        wrapperCol={{
+                            offset: 8,
+                            span: 16,
+                        }}
+                    >
+                        <Button type="primary" htmlType="submit">
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
         </>
     )
 }

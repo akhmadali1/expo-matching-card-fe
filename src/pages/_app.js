@@ -1,6 +1,13 @@
 import '@/styles/globals.scss';
+import { ConfigProvider } from 'antd';
 import Head from 'next/head';
 export default function App({ Component, pageProps }) {
+  const theme = {
+    token: {
+      fontSize: 16,
+      colorPrimary: '#08793F',
+    },
+  };
   return (
     <>
       <Head>
@@ -13,7 +20,9 @@ export default function App({ Component, pageProps }) {
       </Head>
       <>
         <>
-          <Component {...pageProps} />
+          <ConfigProvider theme={theme}>
+            <Component {...pageProps} />
+          </ConfigProvider>
         </>
       </>
     </>

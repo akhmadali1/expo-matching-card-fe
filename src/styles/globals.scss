@@ -101,7 +101,24 @@ input::-moz-focus-inner {
     position: absolute;
     animation: up-and-down 3s infinite linear;
     width: 500px;
-    height: 200px; 
+    height: 400px;
+    @include xs {
+      width: 500px;
+      height: 300px;
+    } 
+  }
+
+  &__svg-logo{
+    margin: 0;
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    @include md {
+      top: 10px;
+      left: 10px;
+      transform: none;
+    }
   }
 
   &__svg-right {
