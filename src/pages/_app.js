@@ -1,13 +1,10 @@
 import '@/styles/globals.scss';
-import { ConfigProvider } from 'antd';
 import Head from 'next/head';
+import "../../node_modules/primereact/resources/themes/lara-light-teal/theme.css";
+import "../../node_modules/primeflex/primeflex.css"
+import { PrimeReactProvider } from 'primereact/api';
 export default function App({ Component, pageProps }) {
-  const theme = {
-    token: {
-      fontSize: 16,
-      colorPrimary: '#08793F',
-    },
-  };
+
   return (
     <>
       <Head>
@@ -20,9 +17,9 @@ export default function App({ Component, pageProps }) {
       </Head>
       <>
         <>
-          <ConfigProvider theme={theme}>
+          <PrimeReactProvider value={{ ripple: true }}>
             <Component {...pageProps} />
-          </ConfigProvider>
+          </PrimeReactProvider>
         </>
       </>
     </>

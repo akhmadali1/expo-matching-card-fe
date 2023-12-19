@@ -1,3 +1,4 @@
+import { Button } from 'primereact/button';
 import React from 'react'
 
 export default function Scoreboard(props) {
@@ -22,40 +23,40 @@ export default function Scoreboard(props) {
       };
     return (
         <>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', paddingTop:'100px' }}>
                 Scoreboard
-                <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '70vh' }}>
+                <div style={{ width: '100%', marginTop: '5px', overflow: 'auto', height: '50vh' }}>
                     <table border="1" cellPadding="10" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', margin: '0 auto', fontSize: '12px' }}>
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>Username</th>
-                                <th>Score</th>
-                                <th>Time</th>
-                                <th>Error</th>
-                                <th>Difficulty</th>
+                                <th style={{padding:'10px'}}>Rank</th>
+                                <th style={{padding:'10px'}}>Username</th>
+                                <th style={{padding:'10px'}}>Score</th>
+                                <th style={{padding:'10px'}}>Time</th>
+                                <th style={{padding:'10px'}}>Error</th>
+                                <th style={{padding:'10px'}}>Difficulty</th>
                             </tr>
                         </thead>
                         <tbody>
                             {dataScoreBoard.map((item, index) => (
                                 <>
                                     <tr>
-                                        <td>{index + 1}</td>
-                                        <td>{item.Username}</td>
-                                        <td>{item.Score}</td>
-                                        <td>{formatTime(item.Time)}</td>
-                                        <td>{item.Error}</td>
-                                        <td>{item.Difficulty === 1 ? "Easy" : item.Difficulty === 2 ? "Medium" : item.Difficulty === 3 ? "Hard" : ''}</td>
+                                        <td style={{padding:'10px'}}>{index + 1}</td>
+                                        <td style={{padding:'10px'}}>{item.Username}</td>
+                                        <td style={{padding:'10px'}}>{item.Score}</td>
+                                        <td style={{padding:'10px'}}>{formatTime(item.Time)}</td>
+                                        <td style={{padding:'10px'}}>{item.Error}</td>
+                                        <td style={{padding:'10px'}}>{item.Difficulty === 1 ? "Easy" : item.Difficulty === 2 ? "Medium" : item.Difficulty === 3 ? "Hard" : ''}</td>
                                     </tr>
                                 </>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                <button style={{ marginLeft: '10px', padding: '15px 30px', fontSize: '18px', cursor: 'pointer' }} onClick={(e) => {
+                <Button style={{ backgroundColor:'#14b8a6' }} className='w-6 py-1' label="Back" color='primary' onClick={(e) => {
                     e.preventDefault();
                     setClickPlay(1);
-                }}>Back</button>
+                }}/>
             </div>
         </>
     )

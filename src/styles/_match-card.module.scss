@@ -2,11 +2,11 @@
 
 .cardboard {
   grid-gap: 100px 70px;
-  margin-top: 50px;
+  margin-top: 60px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
   @include xs {
-    padding-top: 50px;
+    padding-top: 60px;
     grid-gap: 120px 95px;
   }
 
@@ -16,8 +16,6 @@
   }
   
 }
-
-
 .card { 
   width: 85px;
   height: 85px;
@@ -38,43 +36,3 @@
   transform: scale(1.2);
   transition: 0.3s;
 }
-
-// .cardboard {
-  // padding-top: 50px;
-  // grid-template-columns: repeat(4, minmax(0, 1fr));
-  // grid-gap: 120px 120px;
-//   @include mobile{
-    // padding-top: 50px;
-    // grid-gap: 120px 95px;
-//   }
-// }
-// .card {
-//   width: 110px;
-//   height: 110px;
-//   @include mobile{
-//     width: 100px;
-//     height: 100px;
-//   }
-// }
-
-// @media only screen and (max-width: 768px) {
-//   .cardboard {
-//     padding-top: 50px;
-//     grid-gap: 120px 95px;
-//   }
-//   .card {
-//     width: 100px;
-//     height: 100px;
-//   }
-// }
-
-// @media only screen and (max-width: 425px) {
-//   .cardboard {
-//     grid-gap: 100px 70px;
-//     margin-top: 50px;
-//   }
-//   .card {
-//     width: 85px;
-//     height: 85px;
-//   }
-// }
