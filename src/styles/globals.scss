@@ -103,6 +103,7 @@ input::-moz-focus-inner {
     animation: up-and-down 3s infinite linear;
     width: 200px;
     height: 150px;
+    z-index: 0;
     @include sm {
       width: 350px;
       height: 250px;

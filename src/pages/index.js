@@ -134,8 +134,6 @@ export default function MatchingCardGame() {
     setRows(4);
     setColumns(5);
     setErrors(0);
-    setTimeCount(0);
-    setTime({ minutes: 0, seconds: 0, milliseconds: 0 })
     setClickPlay(0);
     setDifficulty(1);
     setUsername("");
@@ -185,25 +183,45 @@ export default function MatchingCardGame() {
   };
 
   const [time, setTime] = useState({ minutes: 0, seconds: 0, milliseconds: 0 });
-  const [timeCount, setTimeCount] = useState(0);
+  const [running, setRunning] = useState(false);
   const intervalRef = useRef(null);
+  const startTimeRef = useRef(0);
+  const [timeCount, setTimeCount] = useState(0);
 
   const startStopwatch = () => {
     const startTime = Date.now() - (time.minutes * 60000 + time.seconds * 1000 + time.milliseconds);
+    startTimeRef.current = startTime;
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTime;
       const minutes = Math.floor(elapsedTime / 60000);
       const seconds = Math.floor((elapsedTime % 60000) / 1000);
-      const milliseconds = Math.floor((elapsedTime % 1000) / 10);
+      const milliseconds = Math.floor((elapsedTime % 1000));
       setTimeCount(elapsedTime);
       setTime({ minutes, seconds, milliseconds });
     }, 10);
+    setRunning(true);
+  };
+
+  const pauseStopwatch = () => {
+    clearInterval(intervalRef.current);
+    setRunning(false);
   };
 
   const resetStopwatch = () => {
     clearInterval(intervalRef.current);
+    setTime({ minutes: 0, seconds: 0, milliseconds: 0 });
     setTimeCount(0);
+    setRunning(false);
   };
+
+  useEffect(() => {
+    if (running) {
+      startStopwatch();
+    }
+    return () => {
+      clearInterval(intervalRef.current);
+    };
+  }, [running]);
 
   useEffect(() => {
     if (selectedCards.length === 2) {
@@ -275,6 +293,7 @@ export default function MatchingCardGame() {
   useEffect(() => {
     const handleMatchedCards = async () => {
       if (matchedCards === rows * columns) {
+        pauseStopwatch();
 
         const score = calculateScore(difficulty, timeCount, errors)
         alert(`Congratulations! You've matched all the cards! Your score: ${score}`);
@@ -309,12 +328,12 @@ export default function MatchingCardGame() {
 
   return (
     <div className='container-bg'>
-      <svg viewBox="0 0 553 594" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-right'>
-        <path d="M66.7492 -102.486C101.588 -126.201 131.617 -150.052 156.667 -172.197C282.376 -344.728 276.241 -277.903 156.667 -172.197C155.393 -170.449 154.106 -168.676 152.805 -166.879C-3.77379 49.4863 260.286 -311.181 377.051 4.89337C439.259 173.288 398.138 284.218 376.315 344.616C384.925 360.244 388.575 379.49 390.344 400.302C402.927 399.952 420.987 397.022 446.145 391.603C645.752 348.616 713.689 608.686 503.37 593.346C376.025 584.058 397.162 480.538 390.344 400.302C356.28 401.251 362.34 383.296 376.315 344.616C363.297 320.987 338.941 305.628 292.602 305.628C97.458 305.628 340.363 -26.3174 106.834 -20.0744C76.5012 -19.2635 53.9412 -18.2962 37.5726 -17.3409C6.00554 -9.85706 -28.2112 -13.5018 37.5726 -17.3409C58.6233 -22.3316 78.4956 -32.2711 66.7492 -50.4019C39.7541 -92.0695 55.5013 -102.486 66.7492 -102.486Z" fill="#08793F" fillOpacity="0.4" />
+      <svg viewBox="0 0 553 594" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-right z-0'>
+        <path className='z-0' d="M66.7492 -102.486C101.588 -126.201 131.617 -150.052 156.667 -172.197C282.376 -344.728 276.241 -277.903 156.667 -172.197C155.393 -170.449 154.106 -168.676 152.805 -166.879C-3.77379 49.4863 260.286 -311.181 377.051 4.89337C439.259 173.288 398.138 284.218 376.315 344.616C384.925 360.244 388.575 379.49 390.344 400.302C402.927 399.952 420.987 397.022 446.145 391.603C645.752 348.616 713.689 608.686 503.37 593.346C376.025 584.058 397.162 480.538 390.344 400.302C356.28 401.251 362.34 383.296 376.315 344.616C363.297 320.987 338.941 305.628 292.602 305.628C97.458 305.628 340.363 -26.3174 106.834 -20.0744C76.5012 -19.2635 53.9412 -18.2962 37.5726 -17.3409C6.00554 -9.85706 -28.2112 -13.5018 37.5726 -17.3409C58.6233 -22.3316 78.4956 -32.2711 66.7492 -50.4019C39.7541 -92.0695 55.5013 -102.486 66.7492 -102.486Z" fill="#08793F" fillOpacity="0.4" />
       </svg>
       <img src={'logo-kalbe-black-1.webp'} className='container-bg__svg-logo' />
-      <svg width="529" height="368" viewBox="0 0 529 368" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-left'>
-        <path d="M291.561 117.507C496.474 -160.389 -127.737 141.397 -148.789 144.559L-173 1045H147C125.83 1020.88 103.421 940.587 183.14 812.424C282.79 652.221 649.105 196.038 489.105 180.931C329.105 165.824 86.6492 395.404 291.561 117.507Z" fill="#08793F" fillOpacity="0.4" />
+      <svg width="529" height="368" viewBox="0 0 529 368" fill="none" xmlns="http://www.w3.org/2000/svg" className='container-bg__svg-left z-0'>
+        <path className='z-0' d="M291.561 117.507C496.474 -160.389 -127.737 141.397 -148.789 144.559L-173 1045H147C125.83 1020.88 103.421 940.587 183.14 812.424C282.79 652.221 649.105 196.038 489.105 180.931C329.105 165.824 86.6492 395.404 291.561 117.507Z" fill="#08793F" fillOpacity="0.4" />
       </svg>
       <div className='container' style={{ paddingTop: '120px' }}>
         <audio ref={audioRef} loop autoPlay>
